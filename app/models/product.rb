@@ -3,6 +3,12 @@ class ProductAvailability < Trailblazer::Operation
   step :fetch_product_and_location_details
   step :calculate_availability
   step :persist_and_build_output
+  after_commit :recalculate_availability
+  
+  def recalculate_availability
+    RecalculateAvailabilityJob.perform_later id \
+                     if discontinued_previously_changed?
+
   def read_params(options)
     # logic to read the product and location id params passed 
       #if params not passed, return false (this will exit the concept and return to the caller)
