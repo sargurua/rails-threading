@@ -4,7 +4,14 @@ class ProductAvailability < Trailblazer::Operation
   step :calculate_availability
   step :persist_and_build_output
   after_commit :recalculate_availability
+  after_commit :send_mail_on_banned
   
+  def send_mail_on_banned
+    mail_ids = JSON.parse(ENV['BANNED_PRODUCT_MAIL_IDS'])
+    BannedProductMailer.send_mail(name: name, email_id:) \
+          if banned_previously_changed? && banned_previous_change[1]
+  end
+
   def recalculate_availability
     RecalculateAvailabilityJob.perform_later id \
                      if discontinued_previously_changed?
