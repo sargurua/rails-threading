@@ -18,4 +18,20 @@ class Mailer
       n < 2 ? n : fib(n-1) + fib(n-2)
     end  
   end
+
+  class MailBuilder
+    def initialize(&block)
+      @mail = Mail.new
+      instance_eval(&block)
+    end
+    
+    attr_reader :mail
+
+    %w(from to subject body).each do |m|
+      define_method(m) do |val|
+        @mail.send("#{m}=", val)
+      end
+    end
+  end
+  
 end
